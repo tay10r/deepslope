@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as follows:"
+title: "DeepSlope: A Deep Learning-Based Terrain Erosion Algorithm"
+authors:
+  - given-names: "Taylor"
+    family-names: "Holberton"
+version: "latest"
+date-released: "2024-02-04"  # Adjust to your latest release date
+license: "MIT"
+repository-code: "https://github.com/tay10r/deepslope"
