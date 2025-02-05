@@ -63,3 +63,12 @@ python3 -m deepslope.optim.train
 *VS Code users: you can run the `Train Net` launch configuration.*
 
 At the end of each epoch, a test is done and saved to `tmp` in the repo directory. You can examine this files to monitor the training progress.
+
+## Examples
+
+Here's a before and after render of the first prototype model.
+The input was made with simplex noise.
+This primarily is meant as a proof of concept, the model is still under design.
+
+![Image](https://github.com/user-attachments/assets/13137af6-3302-4e53-8994-8cc8a8e2f662)
+![Image](https://github.com/user-attachments/assets/56b68181-8350-4941-ad61-984ab6a306cf)
