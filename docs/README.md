@@ -45,7 +45,7 @@ For example:
 ```json
 {
     "dems": [
-        "data/data/TBDEMCB00225/some.tiff"
+        "data/TBDEMCB00225/Chesapeake_Topobathy_DEM_v1_148.TIF"
     ]
 }
 ```
