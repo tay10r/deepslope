@@ -70,5 +70,5 @@ Here's a before and after render of the first prototype model.
 The input was made with simplex noise.
 This primarily is meant as a proof of concept, the model is still under design.
 
-![Image](https://github.com/user-attachments/assets/13137af6-3302-4e53-8994-8cc8a8e2f662)
-![Image](https://github.com/user-attachments/assets/56b68181-8350-4941-ad61-984ab6a306cf)
+![Before](https://github.com/user-attachments/assets/56b68181-8350-4941-ad61-984ab6a306cf)
+![After](https://github.com/user-attachments/assets/13137af6-3302-4e53-8994-8cc8a8e2f662)
