@@ -5,6 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Bootstrap",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "deepslope.bootstrap"
+        },
+        {
             "name": "Train Net",
             "type": "debugpy",
             "request": "launch",
