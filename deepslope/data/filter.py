@@ -6,7 +6,7 @@ class Filter:
     Used for removing frequency components of a terrain.
     """
 
-    def __init__(self, cutoff: float, high_pass: bool = False):
+    def __init__(self, cutoff: float, high_pass: bool = False, normalize_output: bool = False):
         """
         Initializes the filter.
 
@@ -15,6 +15,7 @@ class Filter:
         """
         self.cutoff = cutoff
         self.high_pass = high_pass
+        self.normalize_output = normalize_output
 
     def __call__(self, data: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         freq = np.fft.fft2(data)
@@ -26,7 +27,8 @@ class Filter:
         if self.high_pass:
             mask = 1.0 - mask
         result = np.fft.ifft2(np.fft.ifftshift(shifted_freq * mask)).real
-        min_h = np.min(result)
-        max_h = np.max(result)
-        result = (result - min_h) / (max_h - min_h)
+        if self.normalize_output:
+            min_h = np.min(result)
+            max_h = np.max(result)
+            result = (result - min_h) / (max_h - min_h)
         return np.log1p(np.abs(shifted_freq)), result

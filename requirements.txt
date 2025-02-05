@@ -5,3 +5,4 @@ torch
 torchvision
 pillow
 loguru
+panda3d

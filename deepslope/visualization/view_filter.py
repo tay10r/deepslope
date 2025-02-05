@@ -23,9 +23,9 @@ def main():
     model: ElevationModel = TiffElevationModel(
         'data/TBDEMCB00223/Chesapeake_Topobathy_DEM_v1_161.TIF')
     before = model.get_tile(512, 512, 1024, 1024)
-    min_h = np.min(before)
-    max_h = np.max(before)
-    before = (before - min_h) / (max_h - min_h)
+    # min_h = np.min(before)
+    # max_h = np.max(before)
+    # before = (before - min_h) / (max_h - min_h)
     filter = Filter(cutoff=0.005)
     freq, after = filter(before)
     visualize_before_after(

@@ -17,6 +17,12 @@
             "module": "deepslope.optim.train"
         },
         {
+            "name": "View Render",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "deepslope.visualization.view_render"
+        },
+        {
             "name": "View Filter",
             "type": "debugpy",
             "request": "launch",

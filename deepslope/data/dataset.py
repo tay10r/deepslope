@@ -13,7 +13,12 @@ from deepslope.data.elevation import ElevationModel, TiffElevationModel
 
 
 class TiffDataset(Dataset):
-    def __init__(self, dem_path_list: list, frequency_cutoffs: list[float], sample_size: tuple[int, int], seed: int):
+    def __init__(self,
+                 dem_path_list: list,
+                 frequency_cutoffs: list[float],
+                 sample_size: tuple[int, int],
+                 seed: int,
+                 normalize: bool):
         """
         Constructs a new dataset instance.
 
@@ -25,9 +30,10 @@ class TiffDataset(Dataset):
             self.models.append(TiffElevationModel(dem_path))
         self.filters = []
         for cutoff in frequency_cutoffs:
-            self.filters.append(Filter(cutoff))
+            self.filters.append(Filter(cutoff, normalize_output=normalize))
         self.sample_size = sample_size
         self.rng = Random(seed)
+        self.normalize = normalize
 
     def close(self):
         for m in self.models:
@@ -36,7 +42,7 @@ class TiffDataset(Dataset):
     def __len__(self):
         # The length is practically unlimited, but PyTorch excepts a length regardless.
         # This is mostly an arbitrary number.
-        return 128
+        return 1024
 
     def __getitem__(self, _):
         # Note that the index is disregarded because this dataset is mostly procedural.
@@ -54,13 +60,19 @@ class TiffDataset(Dataset):
             tile_img = F.vertical_flip(tile_img)
         tile = np.array(tile_img)
 
-        # min max normalization
-        min_h = np.min(tile)
-        max_h = np.max(tile)
-        tile = (tile - min_h) / (max_h - min_h)
+        if self.normalize:
+            # min max normalization
+            min_h = np.min(tile)
+            max_h = np.max(tile)
+            tile = (tile - min_h) / (max_h - min_h)
+        else:
+            # we still need to start at zero, but we keep the scale of the features
+            min_h = np.min(tile)
+            tile = tile - min_h
 
         filter = self.filters[self.rng.randint(0, len(self.filters) - 1)]
-        _, low_freq_tile = filter(tile)
+        expected_fft, low_freq_tile = filter(tile)
         tile = Tensor(tile)
         low_freq_tile = Tensor(low_freq_tile)
-        return unsqueeze(low_freq_tile, dim=0), unsqueeze(tile, dim=0)
+        expected_fft = Tensor(expected_fft)
+        return unsqueeze(low_freq_tile, dim=0), unsqueeze(tile, dim=0), unsqueeze(expected_fft, dim=0)

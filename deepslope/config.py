@@ -33,6 +33,10 @@ class Config:
     # If set to true, the network input and target images will be logged.
     # This can be useful for debugging augmentations to the input data.
     log_dataset: bool = False
+    # Whether or not to normalize height.
+    normalize_height: bool = False
+    # The maximum height of the test image is this many meters.
+    test_height: float = 50.0
 
 
 def get_config(path: str = 'config.json') -> Config:

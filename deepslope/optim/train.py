@@ -2,7 +2,6 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 import torch
-from torch.utils.data import Dataset
 from torch.nn.functional import mse_loss
 from torchvision.utils import save_image, make_grid
 
@@ -19,7 +18,7 @@ from deepslope.data.dataset import TiffDataset
 
 class Program:
     def __init__(self, config_path):
-        self.__config = get_config(config_path)
+        self.__config: Config = get_config(config_path)
         self.__net: Net | None = None
         self.__dataset: TiffDataset | None = None
         Path(self.__config.tmp_path).mkdir(exist_ok=True)
@@ -43,40 +42,54 @@ class Program:
 
         num_epochs = 32
         for i in range(num_epochs):
-            logger.info(f'Epoch [{i}/{num_epochs}]')
-            self.__run_training_epoch(loader)
-            logger.info('Running test.')
+            epoch_loss = self.__run_training_epoch(loader)
             self.__run_test()
             self.__epoch += 1
+            logger.info(f'Epoch [{i}/{num_epochs}]: {epoch_loss}')
 
         self.__dataset.close()
         self.__save_net()
 
-    def __run_training_epoch(self, loader: torch.utils.data.DataLoader):
+    def __run_training_epoch(self, loader: torch.utils.data.DataLoader) -> float:
         self.__net.train()
+        epoch_loss = 0.0
+        init_step = self.__step
         for sample in loader:
-            tile, expected = sample
+
+            tile, expected, _ = sample
             tile = tile.to(self.__device)
             expected = expected.to(self.__device)
+
             self.__optimizer.zero_grad()
             result = self.__net(tile)
-            loss = mse_loss(result, expected)
-            logger.info(f'Loss: {loss.item()}')
-            loss.backward()
+            spatial_loss = mse_loss(result, expected)
+            step_loss = spatial_loss
+            epoch_loss += step_loss.item()
+            step_loss.backward()
             self.__optimizer.step()
+
             if self.__config.log_dataset:
-                save_image(make_grid(tile.cpu(), nrow=4),
-                           self.__get_tmp_path(f'input_{self.__step:08}.png'))
-                save_image(make_grid(expected.cpu(), nrow=4),
-                           self.__get_tmp_path(f'expected_{self.__step:08}.png'))
+                g = make_grid(tile.cpu(), nrow=4)
+                g_name = f'input_{self.__step:08}.png'
+                save_image(g, self.__get_tmp_path(g_name))
+
+                g = make_grid(expected.cpu(), nrow=4)
+                g_name = f'expected_{self.__step:08}.png'
+                save_image(g, self.__get_tmp_path(g_name))
+
             self.__step += 1
+
+        num_steps = self.__step - init_step
+        avg_epoch_loss = epoch_loss / num_steps
+        return avg_epoch_loss
 
     def __run_test(self):
         self.__net.eval()
         with torch.no_grad():
             test_image = Image.open(self.__config.test_image)
             test_image = torch.Tensor(np.array(test_image))
-            test_image = test_image.to(torch.float32) / 256.0
+            scale = self.__config.test_height / 256.0
+            test_image = test_image.to(torch.float32) * scale
             test_image = test_image.to(self.__device)
             test_image = torch.unsqueeze(test_image, dim=0)
             test_image = torch.unsqueeze(test_image, dim=0)
@@ -85,7 +98,8 @@ class Program:
             result = result.cpu()
             result = result.squeeze(dim=0)
             result = result.squeeze(dim=0)
-            img = Image.fromarray((result.numpy() * 255).astype(np.uint8))
+            result = np.clip(result.numpy() / scale, 0, 255).astype(np.uint8)
+            img = Image.fromarray(result)
             img.save(result_path)
 
     def __get_tmp_path(self, name: str) -> str:
@@ -97,8 +111,11 @@ class Program:
         torch.save(self.__net.state_dict(), model_path)
 
     def __open_dataset(self):
-        self.__dataset = TiffDataset(
-            self.__config.dems, self.__config.frequency_cutoffs, self.__config.sample_size, self.__config.seed)
+        self.__dataset = TiffDataset(self.__config.dems,
+                                     self.__config.frequency_cutoffs,
+                                     self.__config.sample_size,
+                                     self.__config.seed,
+                                     self.__config.normalize_height)
 
     def __open_net(self):
         model_path = self.__get_tmp_path('model.pt')
