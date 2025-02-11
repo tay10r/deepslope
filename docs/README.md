@@ -11,6 +11,7 @@ To get started training a model, create a virtual environment and install the de
 python3 -m venv .venv
 . .venv/bin/activate
 pip3 install -r requirements.txt
+pip3 install pg
 ```
 
 ### Building a Dataset

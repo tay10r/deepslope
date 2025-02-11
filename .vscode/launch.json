@@ -5,16 +5,43 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Train Diffusion",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "deepslope.optim",
+            "args": [
+                "--task=train_diffusion"
+            ]
+        },
+        {
+            "name": "Preprocess",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "deepslope.data.preprocess"
+        },
+        {
+            "name": "Make Sequence",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "deepslope.visualization.make_sequence"
+        },
+        {
             "name": "Bootstrap",
             "type": "debugpy",
             "request": "launch",
             "module": "deepslope.bootstrap"
         },
         {
-            "name": "Train Net",
+            "name": "Train GAN Net",
             "type": "debugpy",
             "request": "launch",
-            "module": "deepslope.optim.train"
+            "module": "deepslope.optim.train_gan"
+        },
+        {
+            "name": "Train Refinement Net",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "deepslope.optim.train_refinement"
         },
         {
             "name": "View Render",

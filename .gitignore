@@ -3,3 +3,7 @@ data/*
 tmp/*
 .venv
 config.json
+build
+.cache
+imgui.ini
+*.ini

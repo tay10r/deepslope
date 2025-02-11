@@ -1,5 +1,6 @@
 import numpy as np
 import rasterio
+from rasterio.windows import Window
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -15,7 +16,9 @@ def plot_geotiff_subset(tiff_path, window_bounds):
 
     # Open GeoTIFF file
     with rasterio.open(tiff_path) as dataset:
+        print(dataset.shape)
         # Read the specific window of data
+        window = Window.from_slices((row_start, row_end), (col_start, col_end))
         transform = dataset.window_transform(window)
         window = rasterio.windows.Window.from_slices(
             (row_start, row_end), (col_start, col_end))
@@ -45,7 +48,8 @@ def plot_geotiff_subset(tiff_path, window_bounds):
 
 
 # Example usage: Load a 500x500 pixel subset
-tiff_file = "data/TBDEMCB00223/Chesapeake_Topobathy_DEM_v1_161.TIF"
+tiff_file = "data/TBDEMCB00225/Chesapeake_Topobathy_DEM_v1_148.TIF"
 # Change this to target a different part of the map
-roi = (1000, 1500, 1000, 1500)
+# roi = (1000, 1500, 1000, 1500)
+roi = (0, 2048, 0, 2048)
 plot_geotiff_subset(tiff_file, roi)

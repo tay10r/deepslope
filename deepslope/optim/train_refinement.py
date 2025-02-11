@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from pathlib import Path
+from uuid import uuid4
 
 import torch
 from torch.nn.functional import mse_loss
@@ -12,16 +13,18 @@ import numpy as np
 from PIL import Image
 
 from deepslope.config import Config, get_config
-from deepslope.nn.net import Net
-from deepslope.data.dataset import TiffDataset
+from deepslope.nn.refinement import RefinementNet
+from deepslope.data.dataset import RefinementDataset
 
 
 class Program:
     def __init__(self, config_path):
         self.__config: Config = get_config(config_path)
-        self.__net: Net | None = None
-        self.__dataset: TiffDataset | None = None
+        self.__net: RefinementNet | None = None
+        self.__dataset: RefinementDataset | None = None
         Path(self.__config.tmp_path).mkdir(exist_ok=True)
+        self.__tmp_path = Path(self.__config.tmp_path) / uuid4().hex
+        self.__tmp_path.mkdir(exist_ok=False)
         self.__optimizer: torch.optim.Optimizer | None = None
         self.__device = torch.device(self.__config.device)
         self.__epoch = 0
@@ -40,7 +43,7 @@ class Program:
 
         self.__net = self.__net.to(self.__device)
 
-        num_epochs = 32
+        num_epochs = self.__config.num_epochs
         for i in range(num_epochs):
             epoch_loss = self.__run_training_epoch(loader)
             self.__run_test()
@@ -94,7 +97,7 @@ class Program:
             test_image = torch.unsqueeze(test_image, dim=0)
             test_image = torch.unsqueeze(test_image, dim=0)
             result: torch.Tensor = self.__net(test_image)
-            result_path = self.__get_tmp_path(f'test_{self.__epoch:04}.png')
+            result_path = self.__tmp_path / f'test_{self.__epoch:04}.png'
             result = result.cpu()
             result = result.squeeze(dim=0)
             result = result.squeeze(dim=0)
@@ -102,24 +105,21 @@ class Program:
             img = Image.fromarray(result)
             img.save(result_path)
 
-    def __get_tmp_path(self, name: str) -> str:
-        return str(Path(self.__config.tmp_path) / name)
-
     def __save_net(self):
         assert self.__net is not None
-        model_path = self.__get_tmp_path('model.pt')
+        model_path = str(self.__tmp_path / 'refinement_net.pt')
         torch.save(self.__net.state_dict(), model_path)
 
     def __open_dataset(self):
-        self.__dataset = TiffDataset(self.__config.dems,
-                                     self.__config.frequency_cutoffs,
-                                     self.__config.sample_size,
-                                     self.__config.seed,
-                                     self.__config.normalize_height)
+        self.__dataset = RefinementDataset(self.__config.dems,
+                                           self.__config.frequency_cutoffs,
+                                           self.__config.sample_size,
+                                           self.__config.seed,
+                                           self.__config.normalize_height)
 
     def __open_net(self):
-        model_path = self.__get_tmp_path('model.pt')
-        self.__net = Net()
+        model_path = self.__tmp_path / 'model.pt'
+        self.__net = RefinementNet()
         if Path(model_path).exists():
             self.__net.load_state_dict(
                 torch.load(model_path, weights_only=True))

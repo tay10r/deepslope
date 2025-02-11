@@ -6,3 +6,4 @@ torchvision
 pillow
 loguru
 panda3d
+opencv-python

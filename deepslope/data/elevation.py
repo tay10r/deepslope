@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 import rasterio
 import rasterio.windows
+import pg
 
 
 class ElevationModel(ABC):
@@ -23,6 +24,21 @@ class ElevationModel(ABC):
     @abstractmethod
     def get_tile(self, x: int, y: int, w: int, h: int) -> np.ndarray:
         raise NotImplementedError()
+
+
+class FakeElevationModel(ElevationModel):
+    def __init__(self, seed: int):
+        self.generator = pg.Generator(seed)
+
+    def close(self):
+        pass
+
+    def get_size(self) -> tuple[int, int]:
+        return (65536, 65536)
+
+    def get_tile(self, x: int, y: int, w: int, h: int) -> np.ndarray:
+        # x and y are ignored because the terrain is completely randomized.
+        return self.generator.generate(w, h)
 
 
 class TiffElevationModel(ElevationModel):

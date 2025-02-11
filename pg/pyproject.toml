@@ -1,0 +1,13 @@
+[build-system]
+requires = ['scikit-build-core>=0.10', 'cmake>=3.13']
+build-backend = 'scikit_build_core.build'
+
+[project]
+name = 'pg'
+version = '0.1.0'
+description = 'A library for procedurally generating fake terrain data.'
+readme = 'README.md'
+requires-python = '>=3.8'
+license = { text = 'MIT' }
+authors = [{ name = 'Taylor Holberton', email = 'taylor.holberton@proton.me' }]
+dependencies = [ 'numpy' ]
