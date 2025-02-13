@@ -35,6 +35,15 @@ public:
     return result;
   }
 
+  auto make_noise(int h, int w, int octaves, float frequency, float cutoff) -> py::array_t<float>
+  {
+    py::array_t<float> result(std::vector<int>{ h, w });
+
+    generate_noise(h, w, result.mutable_data(0), octaves, cutoff, frequency, /*max_height=*/1.0F);
+
+    return result;
+  }
+
 protected:
   void generate_brush(int h, int w, float* data)
   {
@@ -67,24 +76,29 @@ protected:
 
   void generate_noise(int h, int w, float* data)
   {
+    std::uniform_int_distribution<int> octave_dist(min_octaves_, max_octaves_);
+    const auto octaves = octave_dist(rng_);
+
     std::uniform_real_distribution<float> height_dist(min_height_, max_height_);
     const auto max_height = height_dist(rng_);
 
     std::uniform_real_distribution<float> freq_dist(min_frequency_, max_frequency_);
     const auto freq = freq_dist(rng_);
 
-    std::uniform_int_distribution<int> octave_dist(min_octaves_, max_octaves_);
-    const auto octaves = octave_dist(rng_);
+    std::uniform_real_distribution<float> cutoff_dist(-max_height, max_height);
+    const auto cutoff = cutoff_dist(rng_);
 
+    generate_noise(h, w, data, octaves, cutoff, freq, max_height);
+  }
+
+  void generate_noise(int h, int w, float* data, int octaves, float cutoff, float frequency, float max_height)
+  {
     std::uniform_real_distribution<float> offset_dist(-1000.0F, 1000.0F);
     const auto u_offset = offset_dist(rng_);
     const auto v_offset = offset_dist(rng_);
 
-    std::uniform_real_distribution<float> cutoff_dist(-max_height, max_height);
-    const auto cutoff = cutoff_dist(rng_);
-
     FastNoiseLite noise(seed_);
-    noise.SetFrequency(freq);
+    noise.SetFrequency(frequency);
     noise.SetFractalOctaves(octaves);
     noise.SetFractalType(FastNoiseLite::FractalType_FBm);
 
@@ -139,5 +153,12 @@ PYBIND11_MODULE(pg, m)
 {
   py::class_<generator>(m, "Generator")
     .def(py::init<int>(), py::arg("seed"))
-    .def("generate", &generator::generate, py::arg("h"), py::arg("w"));
+    .def("generate", &generator::generate, py::arg("h"), py::arg("w"))
+    .def("make_noise",
+         &generator::make_noise,
+         py::arg("h"),
+         py::arg("w"),
+         py::arg("octaves") = 8,
+         py::arg("frequency") = 2.0F,
+         py::arg("cutoff") = 0.0F);
 }

@@ -1,5 +1,6 @@
 from random import Random
 from pathlib import Path
+from typing import Callable
 
 from torch import unsqueeze, Tensor
 from torch.utils.data import Dataset
@@ -16,14 +17,24 @@ from deepslope.data.elevation import ElevationModel, TiffElevationModel, FakeEle
 
 
 class DiffusionDataset(Dataset):
-    def __init__(self, root: Path, batch_size: int, transform: transforms.Transform | None = None):
+    def __init__(self, root: Path, batch_size: int, transform: transforms.Transform | None = None, scale: float = 1.0 / 65535.0):
+        self.paths: list[Path] = []
         self.samples: list[Tensor] = []
         for s in Path(root).glob('*.png'):
-            img = Image.open(str(s))
-            tensor = Tensor(np.array(img))
-            self.samples.append(tensor)
+            self.paths.append(s)
         self.transform = transform
         self.batch_size = batch_size
+        self.scale = scale
+
+    def load(self, callable: Callable[[int, int], None]):
+        num_samples = len(self.paths)
+        log_interval = int(num_samples / 100)
+        for i in range(num_samples):
+            if i % log_interval == 0:
+                callable(i, num_samples)
+            img = Image.open(str(self.paths[i]))
+            tensor = Tensor(np.array(img))
+            self.samples.append(tensor)
 
     def __len__(self) -> int:
         l = len(self.samples)
@@ -31,7 +42,7 @@ class DiffusionDataset(Dataset):
         return l
 
     def __getitem__(self, idx: int) -> tuple[Tensor, Tensor]:
-        s = self.samples[idx].float() * (1.0 / 255.0)
+        s = self.samples[idx].float() * self.scale
         if self.transform is not None:
             s = self.transform(s)
         return unsqueeze(s, dim=0)

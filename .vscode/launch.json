@@ -5,61 +5,32 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Train Diffusion",
+            "name": "Export Model",
             "type": "debugpy",
             "request": "launch",
-            "module": "deepslope.optim",
+            "module": "deepslope.main",
             "args": [
-                "--task=train_diffusion"
+                "export"
             ]
         },
         {
-            "name": "Preprocess",
+            "name": "New Procedural Dataset",
             "type": "debugpy",
             "request": "launch",
-            "module": "deepslope.data.preprocess"
+            "module": "deepslope.main",
+            "args": [
+                "new-dataset",
+                "--procedural"
+            ]
         },
         {
-            "name": "Make Sequence",
+            "name": "Train Diffusion",
             "type": "debugpy",
             "request": "launch",
-            "module": "deepslope.visualization.make_sequence"
-        },
-        {
-            "name": "Bootstrap",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "deepslope.bootstrap"
-        },
-        {
-            "name": "Train GAN Net",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "deepslope.optim.train_gan"
-        },
-        {
-            "name": "Train Refinement Net",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "deepslope.optim.train_refinement"
-        },
-        {
-            "name": "View Render",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "deepslope.visualization.view_render"
-        },
-        {
-            "name": "View Filter",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "deepslope.visualization.view_filter"
-        },
-        {
-            "name": "View TIFF",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "deepslope.visualization.view_tiff"
+            "module": "deepslope.main",
+            "args": [
+                "train"
+            ]
         }
     ]
 }
