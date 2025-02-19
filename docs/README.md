@@ -1,6 +1,8 @@
 About
 =====
 
+**I'm archiving this project simply because there is not a robust dataset out there to build this model with. The various attempts I made at taking real world terrain data, reversing the erosion process, and training on that only led to shortcut learning and/or bad results. While there are some generative approachs you could take (diffusion models), they aren't an approach I'm interested right now (I did investigate them in a branch on this repo.) Feel free to open an issue if you have a question. Just know that the code here and the concept itself is still incomplete.**
+
 This project aims to create a deep learning network that accelerates terrain modeling.
 
 ## Setup
